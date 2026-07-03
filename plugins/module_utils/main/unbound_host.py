@@ -3,12 +3,14 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.api import \
     Session
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.main import \
-    to_digit, simplify_translate
+    to_digit
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.translate import \
+    simplify_translate
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.validate import \
     is_ip4, is_ip6, valid_hostname, is_unset
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.unbound import \
     validate_domain
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.cls import BaseModule
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.module import BaseModule
 
 
 class Host(BaseModule):
@@ -69,7 +71,7 @@ class Host(BaseModule):
 
         self._base_check()
 
-    def _simplify_existing(self, host: dict) -> dict:
+    def simplify_existing(self, host: dict) -> dict:
         simple = simplify_translate(
             existing=host,
             typing=self.FIELDS_TYPING,
@@ -86,7 +88,7 @@ class Host(BaseModule):
 
         return simple
 
-    def _build_request(self) -> dict:
+    def build_request(self) -> dict:
         data = {
             'enabled': to_digit(self.p['enabled']),
             'hostname': self.p['hostname'],

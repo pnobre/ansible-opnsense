@@ -2,9 +2,9 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.api import \
     Session
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.main import \
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.translate import \
     get_selected_list, simplify_translate
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.cls import BaseModule
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.module import BaseModule
 
 
 class SubnetV4(BaseModule):
@@ -41,6 +41,23 @@ class SubnetV4(BaseModule):
         'gateway', 'routes', 'dns', 'domain', 'domain_search', 'ntp_servers', 'time_servers',
         'tftp_server', 'tftp_file', 'v6_only_preferred',
     ]
+    API_FIELDS_IGNORE = [
+        'option_data',
+        'option_data.boot_file_name',
+        'option_data.classless_static_route',
+        'option_data.domain_name',
+        'option_data.domain_name_servers',
+        'option_data.domain_search',
+        'option_data.ntp_servers',
+        'option_data.routers',
+        'option_data.static_routes',
+        'option_data.tftp_server_name',
+        'option_data.time_servers',
+        'option_data.v4_dnr',
+        'option_data.v6_only_preferred',
+        'option_data_autocollect',
+    ]
+    API_FIELDS_IGNORE.extend(API_FIELDS_OPTIONS)
     POOL_JOIN_CHAR = '\n'
     FIELDS_TRANSLATE_SPECIAL = {
         'dns': 'domain_name_servers',
@@ -57,12 +74,12 @@ class SubnetV4(BaseModule):
         self.subnet = {}
         self.existing_subnets = None
 
-    def _simplify_existing(self, entry: dict) -> dict:
+    def simplify_existing(self, entry: dict) -> dict:
         simple = simplify_translate(
             existing=entry,
             typing=self.FIELDS_TYPING,
             translate=self.FIELDS_TRANSLATE,
-            ignore=self.API_FIELDS_OPTIONS,
+            ignore=self.API_FIELDS_IGNORE,
         )
 
         simple['pools'] = simple['pools'].split(self.POOL_JOIN_CHAR)
@@ -98,20 +115,20 @@ class SubnetV4(BaseModule):
             'v6_only_preferred': entry['option_data.v6_only_preferred'],
         }
 
-    def _build_request(self) -> dict:
-        raw_request = self.b.build_request(ignore_fields=self.API_FIELDS_OPTIONS)
+    def build_request(self) -> dict:
+        raw_request = self._base_build_request(ignore_fields=self.API_FIELDS_OPTIONS)
 
         raw_request[self.API_KEY]['pools'] = self.POOL_JOIN_CHAR.join(self.p['pools'])
         raw_request[self.API_KEY][self.API_ATTR_OPTIONS] = {
-            self.FIELDS_TRANSLATE_SPECIAL['dns']: self.b.RESP_JOIN_CHAR.join(self.p['dns']),
-            self.FIELDS_TRANSLATE_SPECIAL['gateway']: self.b.RESP_JOIN_CHAR.join(self.p['gateway']),
+            self.FIELDS_TRANSLATE_SPECIAL['dns']: self.RESP_JOIN_CHAR.join(self.p['dns']),
+            self.FIELDS_TRANSLATE_SPECIAL['gateway']: self.RESP_JOIN_CHAR.join(self.p['gateway']),
             self.FIELDS_TRANSLATE_SPECIAL['routes']: self.p['routes'],
             self.FIELDS_TRANSLATE_SPECIAL['domain']: self.p['domain'],
             self.FIELDS_TRANSLATE_SPECIAL['tftp_server']: self.p['tftp_server'],
             self.FIELDS_TRANSLATE_SPECIAL['tftp_file']: self.p['tftp_file'],
-            'ntp_servers': self.b.RESP_JOIN_CHAR.join(self.p['ntp_servers']),
-            'time_servers': self.b.RESP_JOIN_CHAR.join(self.p['time_servers']),
-            'domain_search': self.b.RESP_JOIN_CHAR.join(self.p['domain_search']),
+            'ntp_servers': self.RESP_JOIN_CHAR.join(self.p['ntp_servers']),
+            'time_servers': self.RESP_JOIN_CHAR.join(self.p['time_servers']),
+            'domain_search': self.RESP_JOIN_CHAR.join(self.p['domain_search']),
             'v6_only_preferred': self.p['v6_only_preferred'],
         }
 

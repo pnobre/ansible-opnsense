@@ -2,7 +2,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.api import \
     Session
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.cls import BaseModule
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.module import BaseModule
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.main import \
     to_digit, is_true
 
@@ -36,11 +36,11 @@ class Rule(BaseModule):
         self.exists = False
 
     def check(self) -> None:
-        self._search_call()
+        self.search_call()
         if not self.exists:
             self.m.fail_json(f"The provided rule '{self.p[self.FIELD_PK]}' was not found!")
 
-        self.r['diff']['after'] = self.b.build_diff(data=self.p)
+        self.r['diff']['after'] = self.build_diff(data=self.p)
         self.r['changed'] = self.r['diff']['before'] != self.r['diff']['after']
 
     def process(self) -> None:
@@ -50,7 +50,7 @@ class Rule(BaseModule):
         if self.rule['enabled'] != self.p['enabled']:
             self.toggle()
 
-    def _search_call(self) -> list:
+    def search_call(self) -> list:
         # NOTE: workaround for issue with incomplete response-data from 'get' endpoint:
         #   https://github.com/opnsense/core/issues/7094
         existing = self.s.post(cnf={

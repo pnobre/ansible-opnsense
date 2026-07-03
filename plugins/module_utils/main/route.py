@@ -2,11 +2,11 @@ from ipaddress import ip_network
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.main import \
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.translate import \
     simplify_translate
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.api import \
     Session
-from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.cls import BaseModule
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.module import BaseModule
 
 
 class Route(BaseModule):
@@ -46,7 +46,7 @@ class Route(BaseModule):
 
         self._base_check()
 
-    def _simplify_existing(self, route: dict) -> dict:
+    def simplify_existing(self, route: dict) -> dict:
         simple = simplify_translate(
             existing=route,
             typing=self.FIELDS_TYPING,
