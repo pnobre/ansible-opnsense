@@ -103,6 +103,9 @@ action_groups:
   nginx:
     - oxlorg.opnsense.nginx_general
     - oxlorg.opnsense.nginx_upstream_server
+    - oxlorg.opnsense.nginx_upstream
+    - oxlorg.opnsense.nginx_location
+    - oxlorg.opnsense.nginx_http_server
   route:
     - oxlorg.opnsense.route
     - oxlorg.opnsense.gateway
