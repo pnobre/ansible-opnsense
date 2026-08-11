@@ -188,7 +188,14 @@ class BaseLogic:
 
                 # todo: perform async calls for parallel data fetching
                 detail_entry = {}
-                if force_details or not base_match_fields or \
+                # auto-generated entries (e.g. NAT/rule system defaults) have no 'detail'
+                # to fetch - the API returns an empty list instead of a dict for these, which
+                # would otherwise crash _search_path_handling's dict-style key lookup below.
+                # Keep the base_entry data for them (still visible via list/get_existing),
+                # just skip the detail call.
+                if base_entry.get('is_automatic'):
+                    pass
+                elif force_details or not base_match_fields or \
                         all(base_entry[field] == self.p[field] for field in match_fields):
                     detail_entry = self._search_path_handling(
                         self._api_get({
