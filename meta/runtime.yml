@@ -106,6 +106,8 @@ action_groups:
     - oxlorg.opnsense.nginx_upstream
     - oxlorg.opnsense.nginx_location
     - oxlorg.opnsense.nginx_http_server
+  dyndns:
+    - oxlorg.opnsense.dyndns_account
   route:
     - oxlorg.opnsense.route
     - oxlorg.opnsense.gateway
@@ -225,6 +227,7 @@ action_groups:
           - oxlorg.opnsense.bind
           - oxlorg.opnsense.webproxy
           - oxlorg.opnsense.nginx
+          - oxlorg.opnsense.dyndns
           - oxlorg.opnsense.route
           - oxlorg.opnsense.gateway
           - oxlorg.opnsense.nat
