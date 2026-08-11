@@ -52,7 +52,25 @@ class SNat(BaseModule):
         self.rule = {}
 
     def check(self) -> None:
-        if self.p['state'] == 'present':
+        if not is_unset(self.p['protocol']):
+            # OPNsense's protocol select values are uppercase (TCP, UDP, ...) except
+            # 'any', which is the one canonical value that stays lowercase. Normalize
+            # user input to match so re-runs stay idempotent.
+            if self.p['protocol'].lower() == 'any':
+                self.p['protocol'] = 'any'
+            else:
+                self.p['protocol'] = self.p['protocol'].upper()
+
+        self._build_log_name()
+        self.find(match_fields=self.p['match_fields'])
+
+        # 'target' and 'interface' are only required to *create* a new rule. An empty
+        # target is a legitimate existing state on OPNsense (it means "use the
+        # interface's own address" -- the standard outbound-NAT default), so this must
+        # only fire when the rule doesn't already exist, not unconditionally -- doing it
+        # before find() ran made it impossible to adopt/manage an existing rule that has
+        # target left empty, which is a normal and common configuration.
+        if self.p['state'] == 'present' and not self.exists:
             if is_unset(self.p['interface']):
                 self.m.fail_json(
                     "You need to provide an 'interface' to create a source-nat rule!"
@@ -62,14 +80,6 @@ class SNat(BaseModule):
                 self.m.fail_json(
                     "You need to provide an 'target' to create a source-nat rule!"
                 )
-
-        if not is_unset(self.p['protocol']):
-            # OPNsense returns protocol values uppercase on existing source-NAT rules.
-            # Normalize user input to that canonical form so re-runs stay idempotent.
-            self.p['protocol'] = self.p['protocol'].upper()
-
-        self._build_log_name()
-        self.find(match_fields=self.p['match_fields'])
 
         if self.p['state'] == 'present':
             validate_values(module=self.m, cnf=self.p, error_func=self.m.fail_json, kind='nat')
