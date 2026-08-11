@@ -14,12 +14,23 @@ class Server(BaseModule):
         'add': 'add_server',
         'del': 'del_server',
         'set': 'set_server',
-        'search': 'get',
+        # was 'get' -- ServerController.php has no bare getAction, only searchServerAction/
+        # getServerAction($uuid). 'get' silently hit some other route returning an empty
+        # blank-template result instead of a 404, so find() never matched an existing server
+        # -- adopting a live server (e.g. via match_fields/FIELD_ID) would have created a
+        # duplicate instead. 'search_server' correctly camelizes to searchServerAction via
+        # Phalcon's routing (confirmed against a live OPNsense 26.7 box).
+        'search': 'search_server',
         'detail': 'get_server',
         'toggle': 'toggle_server',
     }
     API_KEY = 'server'
-    API_KEY_PATH = f'server.servers.{API_KEY}'
+    # was f'server.servers.{API_KEY}' ('server.servers.server') -- ServerController's
+    # getServerAction returns getBase('server', 'servers.server', $uuid), which wraps the
+    # result as {'server': {...}} (one level, matching API_KEY alone), not a 3-level nested
+    # path. The wrong path crashed _search_path_handling as soon as find() (now working,
+    # see CMDS above) tried to fetch details for a real match.
+    API_KEY_PATH = API_KEY
     API_MOD = 'wireguard'
     API_CONT = 'server'
     API_CONT_REL = 'service'
@@ -153,7 +164,12 @@ class Server(BaseModule):
     def search_call(self) -> list:
         raw = self.search()
         if len(raw) > 0:
-            self.existing_vips = raw[list(raw.keys())[0]][self.FIELDS_TRANSLATE['vip']]
+            # was raw[list(raw.keys())[0]][...] -- search() (base/logic.py) always returns a
+            # list of entries, never a dict, so raw.keys() could never have worked. Dormant
+            # until now: with the old broken CMDS['search'] this method's len(raw) > 0 branch
+            # was never reached (search() always came back empty), so this line never ran on
+            # a live box.
+            self.existing_vips = raw[0][self.FIELDS_TRANSLATE['vip']]
 
         if len(raw) == 0:
             self.existing_vips = self.s.get(cnf={
