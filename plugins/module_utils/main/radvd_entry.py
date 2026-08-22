@@ -25,8 +25,12 @@ class RadvdEntry(BaseModule):
     # the UI, or a re-apply here would silently reset them.
     FIELDS_ALL = ['interface', 'mode', 'enabled']
     FIELDS_CHANGE = FIELDS_ALL
+    # 'interface' is an InterfaceField, which OPNsense serialises as the same
+    # option-dict-with-selected-flag shape as a real OptionField on detail/get
+    # calls (not a plain string) -- needs 'select' typing the same as 'mode',
+    # confirmed live against the Radvd API.
     FIELDS_TYPING = {
-        'select': ['mode'],
+        'select': ['mode', 'interface'],
         'bool': ['enabled'],
     }
     EXIST_ATTR = 'entry'

@@ -25,9 +25,15 @@ class SubnetV6(BaseModule):
     ]
     FIELDS_CHANGE = FIELDS_ALL.copy()
     FIELDS_CHANGE.append('dns')
+    # 'interface' is an InterfaceField, which OPNsense serialises the same
+    # option-dict-with-selected-flag shape as a real OptionField on detail/get
+    # calls (not a plain string) -- needs 'select' typing the same as any
+    # dropdown field, confirmed live against the Kea DHCPv6 API.
     FIELDS_TYPING = {
         'list': ['dns'],
+        'select': ['interface'],
     }
+    FIELDS_TRANSLATE = {}
     # Everything subnet6 supports beyond what this (deliberately pragmatic) module manages --
     # prefix delegation, DDNS, per-subnet reservations/options, HA. Left as OPNsense's own
     # defaults; adopt an existing entry only if none of these were customised, or a re-apply
