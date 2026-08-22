@@ -25,4 +25,9 @@ build_ignore: [
   '*_pytest.py', '*_testdata.py', '*pytest_cache', '*/_tmpl.py',
   '.**', 'pytest.ini', 'requirements_*.txt',
   'docs**', 'scripts**', 'venv**', 'Makefile', 'legacy**',
+  # Self-referential symlink chain left behind by running scripts/unit_test.sh directly instead
+  # of through its designed invocation -- harmless where it sits, but breaks
+  # `ansible-galaxy collection build` (a symlink inside it points outside the tarball, which
+  # tar can't resolve on extract). Excluding it from the package rather than deleting it.
+  'collections**',
 ]

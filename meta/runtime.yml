@@ -14,6 +14,7 @@ action_groups:
     - oxlorg.opnsense.rule_interface_group
   unbound:
     - oxlorg.opnsense.unbound_general
+    - oxlorg.opnsense.unbound_advanced
     - oxlorg.opnsense.unbound_acl
     - oxlorg.opnsense.unbound_forward
     - oxlorg.opnsense.unbound_dot
