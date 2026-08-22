@@ -29,8 +29,15 @@ class SubnetV6(BaseModule):
     # option-dict-with-selected-flag shape as a real OptionField on detail/get
     # calls (not a plain string) -- needs 'select' typing the same as any
     # dropdown field, confirmed live against the Kea DHCPv6 API.
+    #
+    # 'dns' is NOT listed here even though it's a real FIELDS_CHANGE entry:
+    # it doesn't exist as a raw API field under that name at all (the API
+    # only ever has nested option_data.dns_servers or the flat dotted
+    # 'option_data.dns_servers') -- 'dns' only starts existing once
+    # simplify_existing() below synthesises it. Declaring it here made
+    # simplify_translate() KeyError trying to type-cast a field that isn't
+    # in the raw entry yet, confirmed live.
     FIELDS_TYPING = {
-        'list': ['dns'],
         'select': ['interface'],
     }
     FIELDS_TRANSLATE = {}
@@ -90,10 +97,11 @@ class SubnetV6(BaseModule):
                 'dns': get_selected_list(opts[self.FIELDS_TRANSLATE_SPECIAL['dns']], remove_empty=True),
             }
 
-        # search call -- flat, dotted keys
+        # search call -- flat, dotted keys, RESP_JOIN_CHAR-joined string (empty if none)
+        raw_dns = entry[f"option_data.{self.FIELDS_TRANSLATE_SPECIAL['dns']}"]
         return {
             **simple,
-            'dns': entry[f"option_data.{self.FIELDS_TRANSLATE_SPECIAL['dns']}"],
+            'dns': raw_dns.split(self.RESP_JOIN_CHAR) if raw_dns else [],
         }
 
     def build_request(self) -> dict:
