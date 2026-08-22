@@ -16,6 +16,7 @@ try:
     from ansible_collections.oxlorg.opnsense.plugins.module_utils.defaults.main import \
         OPN_MOD_ARGS, STATE_MOD_ARG, RELOAD_MOD_ARG
     from ansible_collections.oxlorg.opnsense.plugins.module_utils.main.dhcp_subnet_v4 import SubnetV4
+    from ansible_collections.oxlorg.opnsense.plugins.module_utils.main.dhcp_subnet_v6 import SubnetV6
 
 except MODULE_EXCEPTIONS:
     module_dependency_error()
@@ -92,6 +93,11 @@ def run_module():
             description='The number of seconds for which the client should disable DHCPv4. '
                         'The minimum value is 300 seconds.'
         ),
+        interface=dict(
+            type='str', required=False, default=None,
+            description='Interface this subnet6 is served on. Required when ipv=6, ignored for ipv=4 '
+                        '(DHCPv4 subnets are matched to an interface by their own network, not this field).',
+        ),
         match_fields=dict(
             type='list', required=False, elements='str',
             description='Fields that are used to match configured interface with the running config - '
@@ -118,7 +124,18 @@ def run_module():
     )
 
     if module.params['ipv'] == 6:
-        module.fail_json('DHCPv6 is not yet supported!')
+        # Deliberately pragmatic, mirroring SubnetV4's own scope: subnet, interface,
+        # description, pools and dns_servers only. Prefix delegation (dynamic_prefix,
+        # pd_pools), DDNS, per-subnet reservations/options and HA are all real subnet6
+        # fields OPNsense supports that this does not manage -- adopt an existing entry
+        # only if none of those were customised through the UI, or a re-apply here would
+        # silently reset them to default. See SubnetV6's own API_FIELDS_IGNORE for the
+        # exact list.
+        if not module.params['interface']:
+            module.fail_json("'interface' is required when ipv=6")
+
+        module_wrapper(SubnetV6(module=module, result=result))
+        module.exit_json(**result)
 
     module_wrapper(SubnetV4(module=module, result=result))
     module.exit_json(**result)

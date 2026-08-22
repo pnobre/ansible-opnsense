@@ -246,6 +246,7 @@ action_groups:
           - oxlorg.opnsense.haproxy
           - oxlorg.opnsense.nut
           - oxlorg.opnsense.nut_diagnostics
+          - oxlorg.opnsense.radvd_entry
 
 plugin_routing:
   modules:

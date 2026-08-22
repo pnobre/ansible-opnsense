@@ -67,7 +67,7 @@ SERVICES = {
     'dns_crypt_proxy': {'c': 'dnscryptproxy'},
     'udp_broadcast_relay': {'c': 'udpbroadcastrelay'},
     'clamav': {}, 'hwprobe': {}, 'lldpd': {}, 'nginx': {}, 'ntopng': {}, 'postfix': {}, 'redis': {},
-    'relayd': {}, 'siproxd': {}, 'vnstat': {}, 'tor': {},
+    'relayd': {}, 'siproxd': {}, 'vnstat': {}, 'tor': {}, 'radvd': {},
 }
 
 ACTION_MAPPING = {'reload': 'reconfigure'}
