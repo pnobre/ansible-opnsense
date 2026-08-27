@@ -12,3 +12,6 @@ __pycache__
 /test.log
 /test.sh
 .DS_Store
+
+# local `ansible-galaxy collection install -p collections/` target -- not part of the fork
+/collections/
