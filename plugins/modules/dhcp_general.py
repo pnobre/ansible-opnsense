@@ -15,7 +15,7 @@ from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.wrapper impor
 try:
     from ansible_collections.oxlorg.opnsense.plugins.module_utils.defaults.main import \
         EN_ONLY_MOD_ARG, OPN_MOD_ARGS, RELOAD_MOD_ARG
-    from ansible_collections.oxlorg.opnsense.plugins.module_utils.main.dhcp_general import General
+    from ansible_collections.oxlorg.opnsense.plugins.module_utils.main.dhcp_general import General, GeneralV6
 
 
 except MODULE_EXCEPTIONS:
@@ -33,7 +33,12 @@ def run_module():
         ),
         socket_type=dict(
             type='str', required=False, default='raw', choices=['raw', 'udp'], aliases=['dhcp_socket_type'],
-            description='Socket type used for DHCP communication',
+            description='Socket type used for DHCP communication. IPv4 only - ignored for ipv=6 '
+                        '(Kea DHCPv6 has no socket-type setting)',
+        ),
+        ipv=dict(
+            type='int', required=False, default=4, choices=[4, 6], aliases=['ip_version'],
+            description='Whether to manage the DHCPv4 or DHCPv6 general settings',
         ),
         fw_rules=dict(
             type='bool', required=False, default=True, aliases=['fwrules', 'rules'],
@@ -62,7 +67,8 @@ def run_module():
         }
     )
 
-    module_wrapper(General(module=module, result=result))
+    handler = GeneralV6 if module.params['ipv'] == 6 else General
+    module_wrapper(handler(module=module, result=result))
     module.exit_json(**result)
 
 

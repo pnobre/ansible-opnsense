@@ -62,6 +62,32 @@
         opn3.changed
       when: not ansible_check_mode
 
+    - name: Configuring v6
+      oxlorg.opnsense.dhcp_general:
+        ipv: 6
+        enabled: true
+        interfaces: ['opt1']
+      register: opn_v6_1
+      failed_when: >
+        opn_v6_1.failed or
+        not opn_v6_1.changed
+
+    - name: Nothing changed v6
+      oxlorg.opnsense.dhcp_general:
+        ipv: 6
+        enabled: true
+        interfaces: ['opt1']
+      register: opn_v6_2
+      failed_when: >
+        opn_v6_2.failed or
+        opn_v6_2.changed
+      when: not ansible_check_mode
+
     - name: Cleanup
       oxlorg.opnsense.dhcp_general:
+        enabled: false
+
+    - name: Cleanup v6
+      oxlorg.opnsense.dhcp_general:
+        ipv: 6
         enabled: false
