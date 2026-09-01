@@ -64,21 +64,14 @@ class SNat(BaseModule):
         self._build_log_name()
         self.find(match_fields=self.p['match_fields'])
 
-        # 'target' and 'interface' are only required to *create* a new rule. An empty
-        # target is a legitimate existing state on OPNsense (it means "use the
-        # interface's own address" -- the standard outbound-NAT default), so this must
-        # only fire when the rule doesn't already exist, not unconditionally -- doing it
-        # before find() ran made it impossible to adopt/manage an existing rule that has
-        # target left empty, which is a normal and common configuration.
+        # 'interface' is required to *create* a new rule. 'target' is NOT: an empty
+        # target means "use the interface's own address" -- the standard outbound-NAT
+        # default, and the most common config -- so it's valid on create just as it is
+        # on an existing rule (the adopt case this guard was already relaxed for).
         if self.p['state'] == 'present' and not self.exists:
             if is_unset(self.p['interface']):
                 self.m.fail_json(
                     "You need to provide an 'interface' to create a source-nat rule!"
-                )
-
-            if is_unset(self.p['target']):
-                self.m.fail_json(
-                    "You need to provide an 'target' to create a source-nat rule!"
                 )
 
         if self.p['state'] == 'present':
