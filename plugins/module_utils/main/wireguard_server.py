@@ -71,6 +71,17 @@ class Server(BaseModule):
         self.existing_peers = None
         self.existing_vips = {}
 
+    def simplify_existing(self, existing: dict) -> dict:
+        # ServerController's get/search response carries BOTH 'tunneladdress' (the
+        # real field -- FIELDS_TRANSLATE maps allowed_ips -> tunneladdress) AND a
+        # spurious, always-empty 'allowed_ips' key. simplify_translate() sets
+        # allowed_ips from tunneladdress first, then its passthrough loop for
+        # untranslated fields overwrites it with that empty 'allowed_ips' -- so the
+        # tunnel address reads back as [] and the module rewrites it on every run
+        # (a permanent `changed` with the same diff). Drop the junk key first.
+        existing.pop('allowed_ips', None)
+        return self._base_simplify_existing(existing)
+
     def check(self) -> None:
         if self.p['state'] == 'present':
             if is_unset(self.p['allowed_ips']):
