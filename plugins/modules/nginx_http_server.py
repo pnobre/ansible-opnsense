@@ -47,6 +47,13 @@ def run_module():
             description='UUIDs (or descriptions) of the nginx_location entries served by this vhost',
         ),
         real_ip_source=dict(type='str', required=False, default=''),
+        verify_client=dict(
+            type='str', required=False, default='off',
+            choices=['off', 'on', 'optional', 'optional_no_ca'],
+            description="TLS client-certificate verification. Kept at the OPNsense default "
+                        "'off'; it's declared only because addhttpserver refuses to create a "
+                        "vhost that doesn't send it.",
+        ),
         https_only=dict(type='bool', required=False, default=True),
         http2=dict(type='bool', required=False, default=True),
         enable_acme_support=dict(type='bool', required=False, default=True),

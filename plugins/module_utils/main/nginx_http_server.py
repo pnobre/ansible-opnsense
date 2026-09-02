@@ -23,15 +23,21 @@ class HttpServer(BaseModule):
     API_CONT_REL = 'service'
     # Pragmatic subset -- the OPNsense form has ~60 fields (WAF/OCSP/ciphers/NAXSI tuning
     # this project doesn't touch). Covers what's needed to describe a reverse-proxy vhost.
+    #
+    # verify_client is in the set purely so it's sent on create: addhttpserver rejects a
+    # brand-new vhost that omits it ("Option [] not in list" -- it has no stored default on
+    # an object that's never existed), so without it every new vhost has to be bootstrapped
+    # with a raw API POST. Default 'off' is what the webUI writes and what every existing
+    # vhost already stores, so adding it churns nothing on update.
     FIELDS_CHANGE = [
         'servername', 'default_server', 'listen_http_address', 'listen_https_address',
         'certificate', 'locations', 'real_ip_source', 'https_only', 'http2',
-        'enable_acme_support', 'log_handshakes',
+        'enable_acme_support', 'log_handshakes', 'verify_client',
     ]
     FIELDS_ALL = FIELDS_CHANGE
     FIELDS_TYPING = {
         'bool': ['default_server', 'https_only', 'http2', 'enable_acme_support', 'log_handshakes'],
-        'select': ['certificate', 'real_ip_source'],
+        'select': ['certificate', 'real_ip_source', 'verify_client'],
         'list': ['servername', 'listen_http_address', 'listen_https_address', 'locations'],
     }
     EXIST_ATTR = 'httpserver'
