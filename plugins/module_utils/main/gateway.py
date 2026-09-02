@@ -50,7 +50,16 @@ class Gw(BaseModule):
         ],
         'select': ['interface', 'ip_protocol'],
     }
-    FIELDS_OPTIONAL = ['far_gw']
+    # Dynamic gateways (PPPoE/DHCP interfaces) omit the monitoring-threshold and
+    # ICMP-probe fields entirely from the API response unless they were explicitly
+    # configured. Without them here, simplify_translate() raises KeyError translating
+    # an existing dynamic gateway -- which blocks managing *any* gateway on a box
+    # that has one (e.g. WAN_PPPOE). Marking them optional lets the translate skip
+    # the absent ones; a configured value is still read and diffed as before.
+    FIELDS_OPTIONAL = [
+        'far_gw', 'monitor', 'latency_low', 'latency_high', 'loss_low', 'loss_high',
+        'interval', 'time_period', 'loss_interval', 'data_length',
+    ]
     INT_VALIDATIONS = {
         'priority': {'min': 0, 'max': 255},
         'weight': {'min': 1, 'max': 5},
