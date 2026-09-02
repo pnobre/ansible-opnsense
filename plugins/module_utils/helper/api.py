@@ -157,6 +157,19 @@ def debug_api(
     module.warn(msg)
 
 
+def _safe_response_repr(response) -> str:
+    """response.__dict__ embeds the PreparedRequest, whose .body is the POST payload
+    -- for openvpn_client / any auth'd module that includes the plaintext 'password'.
+    Ansible's no_log never reaches a free-form fail_json() string, so dumping the raw
+    dict leaks the secret into the error (seen 2026-09-01). Emit only the response
+    side, which carries the actual API error and nothing sensitive."""
+    return (
+        f"status={response.status_code} "
+        f"reason={getattr(response, 'reason', '')} "
+        f"url={response.url} body={response.text}"
+    )
+
+
 def check_response(module: AnsibleModule, cnf: dict, response) -> dict:
     debug_api(module=module, response=response)
 
@@ -175,7 +188,7 @@ def check_response(module: AnsibleModule, cnf: dict, response) -> dict:
         if f"{response.__dict__}".find('Controller not found') != -1:
             module.fail_json(
                 f"API call failed | Needed plugin not installed! | "
-                f"Response: {response.__dict__}"
+                f"Response: {_safe_response_repr(response)}"
             )
 
         elif f"{response.__dict__}".find(' in use') != -1:
@@ -185,11 +198,11 @@ def check_response(module: AnsibleModule, cnf: dict, response) -> dict:
             if 'validations' in json:
                 module.fail_json(
                     f"API call failed | Error: {json['validations']} | "
-                    f"Response: {response.__dict__}"
+                    f"Response: {_safe_response_repr(response)}"
                 )
 
             else:
-                module.fail_json(f"API call failed | Response: {response.__dict__}")
+                module.fail_json(f"API call failed | Response: {_safe_response_repr(response)}")
 
     return json
 
