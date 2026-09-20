@@ -193,8 +193,11 @@ class BaseLogic:
                 # would otherwise crash _search_path_handling's dict-style key lookup below.
                 # Keep the base_entry data for them (still visible via list/get_existing),
                 # just skip the detail call.
+                # They also lack the detail fields entry translation needs (e.g. 'source_not'),
+                # so a create that scans every rule crashed on them -- drop them instead;
+                # system rules aren't manageable anyway.
                 if base_entry.get('is_automatic'):
-                    pass
+                    continue
                 elif force_details or not base_match_fields or \
                         all(base_entry[field] == self.p[field] for field in match_fields):
                     detail_entry = self._search_path_handling(
