@@ -13,11 +13,15 @@
 
 ## Requirements
 
-The [httpx python module](https://www.python-httpx.org/) is used for API communications!
+The [httpx python-module](https://www.python-httpx.org/) or [requests python-module](https://requests.readthedocs.io/) is used for API communications!
 
 ```bash
 python3 -m pip install --upgrade httpx
+# or
+python3 -m pip install --upgrade requests
 ```
+
+*Note: If both are installed, "httpx" is preferred by default. You can set the preferred http-client-library using the environmental-variable `HTTP_CLIENT` to a value of "httpx" or "requests".*
 
 Then - install the collection itself:
 
@@ -64,9 +68,11 @@ See also: [Contributing](https://github.com/O-X-L/ansible-opnsense/blob/latest/C
 
 ## Version Support
 
-We try that the `oxlorg.opnsense` modules always support the latest version of OPNsense.
+Currently, these modules have no multi-version support!
 
-If an API changed, the current module-implementation might fail for firewalls running an older firmware.
+That means [each release of the collection](https://github.com/O-X-L/ansible-opnsense/releases) is only compatible with the same OPNsense version!
+
+If you need to use these modules - ensure that there is a supported release BEFORE upgrading your OPNsense firewalls!
 
 I currently try to create a stable release once or twice a year - as this takes 10-20h of work each time for implementing API-fixes.
 
@@ -97,7 +103,7 @@ not implemented => development => [testing](https://github.com/O-X-L/ansible-opn
 | **Rules**                 | oxlorg.opnsense.rule_multi                                     | [Docs](https://ansible-opnsense.oxl.app/modules/rule_multi.html)                                                | stable   |
 | **Rules**                 | oxlorg.opnsense.rule_purge                                     | [Docs](https://ansible-opnsense.oxl.app/modules/rule_multi.html#oxlorg-opnsense-rule-purge)                     | unstable |
 | **Rule Interface Groups** | oxlorg.opnsense.rule_interface_group                           | [Docs](https://ansible-opnsense.oxl.app/modules/rule_interface_group.html#oxlorg-opnsense-rule-interface-group) | stable   |
-| **Savepoints**            | oxlorg.opnsense.savepoint                                      | [Docs](https://ansible-opnsense.oxl.app/modules/savepoint.html)                                                 | stable   |
+| **Savepoints**            | oxlorg.opnsense.savepoint                                      | [Docs](https://ansible-opnsense.oxl.app/modules/savepoint.html)                                                 | removed  |
 | **Packages**              | oxlorg.opnsense.package                                        | [Docs](https://ansible-opnsense.oxl.app/modules/package.html)                                                   | stable   |
 | **System**                | oxlorg.opnsense.system                                         | [Docs](https://ansible-opnsense.oxl.app/modules/system.html)                                                    | stable   |
 | **Cron-Jobs**             | oxlorg.opnsense.cron                                           | [Docs](https://ansible-opnsense.oxl.app/modules/cron.html)                                                      | stable   |
@@ -131,6 +137,7 @@ not implemented => development => [testing](https://github.com/O-X-L/ansible-opn
 | **WireGuard**             | oxlorg.opnsense.wireguard_peer                                 | [Docs](https://ansible-opnsense.oxl.app/modules/wireguard.html)                                                 | stable   |
 | **WireGuard**             | oxlorg.opnsense.wireguard_show                                 | [Docs](https://ansible-opnsense.oxl.app/modules/wireguard.html)                                                 | stable   |
 | **WireGuard**             | oxlorg.opnsense.wireguard_general                              | [Docs](https://ansible-opnsense.oxl.app/modules/wireguard.html)                                                 | stable   |
+| **Interfaces**            | oxlorg.opnsense.interface_assignment                           | [Docs](https://ansible-opnsense.oxl.app/modules/interface.html)                                                 | unstable   |
 | **Interfaces**            | oxlorg.opnsense.interface_vlan                                 | [Docs](https://ansible-opnsense.oxl.app/modules/interface.html)                                                 | stable   |
 | **Interfaces**            | oxlorg.opnsense.interface_vxlan                                | [Docs](https://ansible-opnsense.oxl.app/modules/interface.html)                                                 | stable   |
 | **Interfaces**            | oxlorg.opnsense.interface_vip                                  | [Docs](https://ansible-opnsense.oxl.app/modules/interface.html)                                                 | stable   |
@@ -201,10 +208,14 @@ not implemented => development => [testing](https://github.com/O-X-L/ansible-opn
 | **Nginx**                 | oxlorg.opnsense.nginx_upstream_server                          | [Docs](https://ansible-opnsense.oxl.app/modules/nginx.html#oxlorg-opnsense-nginx-upstream-server)               | stable   |
 | **DHCP Relay**            | oxlorg.opnsense.dhcrelay_relay                                 | [Docs](https://ansible-opnsense.oxl.app/modules/dhcrelay_relay.html)                                            | stable   |
 | **DHCP Relay**            | oxlorg.opnsense.dhcrelay_destination                           | [Docs](https://ansible-opnsense.oxl.app/modules/dhcrelay_destination.html)                                      | stable   |
+| **Router Advertisements** | oxlorg.opnsense.radvd                                          | [Docs](https://ansible-opnsense.oxl.app/modules/radvd.html)                                                     | unstable |
 | **DHCP**                  | oxlorg.opnsense.dhcp_general                                   | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | stable   |
 | **DHCP Subnet**           | oxlorg.opnsense.dhcp_subnet                                    | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | stable   |
 | **DHCP Reservation**      | oxlorg.opnsense.dhcp_reservation                               | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | stable   |
 | **DHCP Controlagent**     | oxlorg.opnsense.dhcp_controlagent                              | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | stable   |
+| **DHCP HA-Peer**          | oxlorg.opnsense.dhcp_ha_peer                                   | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | unstable |
+| **DHCP Options**          | oxlorg.opnsense.dhcp_option                               | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | unstable |
+| **DHCP DDNS**             | oxlorg.opnsense.dhcp_ddns                                       | [Docs](https://ansible-opnsense.oxl.app/modules/dhcp.html)                                                      | unstable |
 | **ACME (Certificates)**   | oxlorg.opnsense.acme_account                                   | [Docs](https://ansible-opnsense.oxl.app/modules/acmeclient.html)                                                | stable   |
 | **ACME (Certificates)**   | oxlorg.opnsense.acme_action                                    | [Docs](https://ansible-opnsense.oxl.app/modules/acmeclient.html)                                                | stable   |
 | **ACME (Certificates)**   | oxlorg.opnsense.acme_general                                   | [Docs](https://ansible-opnsense.oxl.app/modules/acmeclient.html)                                                | stable   |

@@ -14,7 +14,6 @@ action_groups:
     - oxlorg.opnsense.rule_interface_group
   unbound:
     - oxlorg.opnsense.unbound_general
-    - oxlorg.opnsense.unbound_advanced
     - oxlorg.opnsense.unbound_acl
     - oxlorg.opnsense.unbound_forward
     - oxlorg.opnsense.unbound_dot
@@ -46,6 +45,7 @@ action_groups:
     - oxlorg.opnsense.wireguard_show
     - oxlorg.opnsense.wireguard_general
   interface:
+    - oxlorg.opnsense.interface_assignment
     - oxlorg.opnsense.interface_vlan
     - oxlorg.opnsense.interface_vxlan
     - oxlorg.opnsense.interface_vip
@@ -104,11 +104,6 @@ action_groups:
   nginx:
     - oxlorg.opnsense.nginx_general
     - oxlorg.opnsense.nginx_upstream_server
-    - oxlorg.opnsense.nginx_upstream
-    - oxlorg.opnsense.nginx_location
-    - oxlorg.opnsense.nginx_http_server
-  dyndns:
-    - oxlorg.opnsense.dyndns_account
   route:
     - oxlorg.opnsense.route
     - oxlorg.opnsense.gateway
@@ -159,6 +154,9 @@ action_groups:
     - oxlorg.opnsense.dhcp_controlagent
     - oxlorg.opnsense.dhcp_general
     - oxlorg.opnsense.dhcp_subnet
+    - oxlorg.opnsense.dhcp_ha_peer
+    - oxlorg.opnsense.dhcp_option
+    - oxlorg.opnsense.dhcp_ddns
   acme:
     - oxlorg.opnsense.acme_general
     - oxlorg.opnsense.acme_account
@@ -214,7 +212,7 @@ action_groups:
     - oxlorg.opnsense.nut
     - oxlorg.opnsense.nut_diagnostics
   radvd:
-    - oxlorg.opnsense.radvd_entry
+    - oxlorg.opnsense.radvd
   all:
     - metadata:
         extend_group:
@@ -230,7 +228,6 @@ action_groups:
           - oxlorg.opnsense.bind
           - oxlorg.opnsense.webproxy
           - oxlorg.opnsense.nginx
-          - oxlorg.opnsense.dyndns
           - oxlorg.opnsense.route
           - oxlorg.opnsense.gateway
           - oxlorg.opnsense.nat

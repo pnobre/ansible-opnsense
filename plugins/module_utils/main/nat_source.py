@@ -6,6 +6,8 @@ from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.validate im
     is_unset
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.rule import \
     validate_values
+from ansible_collections.oxlorg.opnsense.plugins.module_utils.helper.translate import \
+    get_selected
 from ansible_collections.oxlorg.opnsense.plugins.module_utils.base.module import BaseModule
 
 
@@ -46,6 +48,8 @@ class SNat(BaseModule):
     }
     EXIST_ATTR = 'rule'
     API_CMD_REL = 'apply'
+    SKIP_AUTO_ENTRIES = True
+    MANUAL_MODES = ['hybrid', 'advanced']
 
     def __init__(self, module: AnsibleModule, result: dict, session: Session = None, fail: dict = None):
         BaseModule.__init__(self=self, m=module, r=result, s=session, f=fail)
@@ -53,31 +57,51 @@ class SNat(BaseModule):
 
     def check(self) -> None:
         if not is_unset(self.p['protocol']):
-            # OPNsense's protocol select values are uppercase (TCP, UDP, ...) except
-            # 'any', which is the one canonical value that stays lowercase. Normalize
-            # user input to match so re-runs stay idempotent.
+            # OPNsense returns source-NAT protocols mostly uppercase, except 'any' which
+            # stays lowercase. Normalize to the API's canonical values for idempotency.
             if self.p['protocol'].lower() == 'any':
                 self.p['protocol'] = 'any'
+
             else:
                 self.p['protocol'] = self.p['protocol'].upper()
 
+        self._check_mode()
         self._build_log_name()
         self.find(match_fields=self.p['match_fields'])
 
-        # 'interface' is required to *create* a new rule. 'target' is NOT: an empty
-        # target means "use the interface's own address" -- the standard outbound-NAT
-        # default, and the most common config -- so it's valid on create just as it is
-        # on an existing rule (the adopt case this guard was already relaxed for).
-        if self.p['state'] == 'present' and not self.exists:
-            if is_unset(self.p['interface']):
-                self.m.fail_json(
-                    "You need to provide an 'interface' to create a source-nat rule!"
-                )
+        # an empty 'target' is valid (OPNsense then uses the interface's own address);
+        #   'interface' is only needed to create - an existing rule can be adopted via uuid
+        if self.p['state'] == 'present' and not self.exists and is_unset(self.p['interface']):
+            self.m.fail_json(
+                "You need to provide an 'interface' to create a source-nat rule!"
+            )
 
         if self.p['state'] == 'present':
             validate_values(module=self.m, cnf=self.p, error_func=self.m.fail_json, kind='nat')
 
         self._base_check()
+
+    def _check_mode(self) -> None:
+        # OPNsense only applies and lists manual rules in the 'hybrid' and 'advanced' outbound-NAT modes
+        #   in any other mode 'search_rule' returns none of them, so existing rules can't be matched
+        settings = self.s.get(cnf={**self.call_cnf, 'command': 'get'})['filter']
+        if 'general' in settings:
+            mode = get_selected(settings['general']['snat_mode'])
+
+        else:
+            mode = get_selected(settings['settings']['nat']['snat_mode'])
+
+        if mode in self.MANUAL_MODES:
+            return
+
+        msg = (
+            f"The outbound-NAT mode is '{mode}'. OPNsense only applies and lists manual source-nat "
+            f"rules in the modes {self.MANUAL_MODES} (Firewall - NAT - Source NAT - Mode)!"
+        )
+        if self.p['state'] == 'present':
+            self.m.fail_json(f"{msg} Change the mode before adding or changing rules.")
+
+        self.m.warn(f"{msg} Existing rules can't be found, so none were removed.")
 
     def _build_log_name(self) -> str:
         if self.p['description'] not in [None, '']:

@@ -42,6 +42,7 @@ class BaseLogic:
     ATTR_FIELD_PK = 'FIELD_PK'
     ATTR_CMDS = 'CMDS'
     ATTR_EXIST = 'EXIST_ATTR'
+    ATTR_SKIP_AUTO_ENTRIES = 'SKIP_AUTO_ENTRIES'
     PARAM_MATCH_FIELDS = 'match_fields'
     QUERY_MAX_ENTRIES = 1000
     VALUE_NO_LOG = 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'
@@ -188,17 +189,10 @@ class BaseLogic:
 
                 # todo: perform async calls for parallel data fetching
                 detail_entry = {}
-                # auto-generated entries (e.g. NAT/rule system defaults) have no 'detail'
-                # to fetch - the API returns an empty list instead of a dict for these, which
-                # would otherwise crash _search_path_handling's dict-style key lookup below.
-                # Keep the base_entry data for them (still visible via list/get_existing),
-                # just skip the detail call.
-                # They also lack the detail fields entry translation needs (e.g. 'source_not'),
-                # so a create that scans every rule crashed on them -- drop them instead;
-                # system rules aren't manageable anyway.
-                if base_entry.get('is_automatic'):
+                if getattr(self, self.ATTR_SKIP_AUTO_ENTRIES, False) and base_entry.get('is_automatic', False):
                     continue
-                elif force_details or not base_match_fields or \
+
+                if force_details or not base_match_fields or \
                         all(base_entry[field] == self.p[field] for field in match_fields):
                     detail_entry = self._search_path_handling(
                         self._api_get({
@@ -542,6 +536,9 @@ class BaseLogic:
             except KeyError:
                 if field in self.p:
                     diff[field] = self.p[field]
+
+                elif field in getattr(self, self.ATTR_OPTIONAL, []):
+                    continue
 
             if isinstance(diff[field], list):
                 try:
