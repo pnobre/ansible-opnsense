@@ -14,6 +14,7 @@ action_groups:
     - oxlorg.opnsense.rule_interface_group
   unbound:
     - oxlorg.opnsense.unbound_general
+    - oxlorg.opnsense.unbound_advanced
     - oxlorg.opnsense.unbound_acl
     - oxlorg.opnsense.unbound_forward
     - oxlorg.opnsense.unbound_dot
@@ -104,6 +105,9 @@ action_groups:
   nginx:
     - oxlorg.opnsense.nginx_general
     - oxlorg.opnsense.nginx_upstream_server
+    - oxlorg.opnsense.nginx_upstream
+    - oxlorg.opnsense.nginx_location
+    - oxlorg.opnsense.nginx_http_server
   route:
     - oxlorg.opnsense.route
     - oxlorg.opnsense.gateway
@@ -213,6 +217,8 @@ action_groups:
     - oxlorg.opnsense.nut_diagnostics
   radvd:
     - oxlorg.opnsense.radvd
+  dyndns:
+    - oxlorg.opnsense.dyndns_account
   all:
     - metadata:
         extend_group:
@@ -247,6 +253,7 @@ action_groups:
           - oxlorg.opnsense.nut
           - oxlorg.opnsense.nut_diagnostics
           - oxlorg.opnsense.radvd
+          - oxlorg.opnsense.dyndns
 
 plugin_routing:
   modules:
