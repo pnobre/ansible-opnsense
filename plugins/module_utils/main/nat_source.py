@@ -56,6 +56,14 @@ class SNat(BaseModule):
         self.rule = {}
 
     def check(self) -> None:
+        if self.p['state'] == 'present':
+            if is_unset(self.p['interface']):
+                self.m.fail_json(
+                    "You need to provide an 'interface' to create a source-nat rule!"
+                )
+
+            # an empty 'target' is valid: OPNsense then uses the interface's own address
+
         if not is_unset(self.p['protocol']):
             # OPNsense returns source-NAT protocols mostly uppercase, except 'any' which
             # stays lowercase. Normalize to the API's canonical values for idempotency.
@@ -68,13 +76,6 @@ class SNat(BaseModule):
         self._check_mode()
         self._build_log_name()
         self.find(match_fields=self.p['match_fields'])
-
-        # an empty 'target' is valid (OPNsense then uses the interface's own address);
-        #   'interface' is only needed to create - an existing rule can be adopted via uuid
-        if self.p['state'] == 'present' and not self.exists and is_unset(self.p['interface']):
-            self.m.fail_json(
-                "You need to provide an 'interface' to create a source-nat rule!"
-            )
 
         if self.p['state'] == 'present':
             validate_values(module=self.m, cnf=self.p, error_func=self.m.fail_json, kind='nat')

@@ -184,10 +184,10 @@ def test_nat_source_automatic_mode_warns_on_absent(mocker):
     module.warn.assert_called_once()
 
 
-def _build_snat(mocker, exists: bool, **params) -> SNat:
+def _build_snat(mocker, **params) -> SNat:
     module = MockAnsibleModule()
     module.params.update({
-        'state': 'present', 'interface': '', 'target': '', 'protocol': '', 'match_fields': ['uuid'],
+        'state': 'present', 'interface': 'lan', 'target': '', 'protocol': '', 'match_fields': ['description'],
         'enabled': True, 'sequence': 1, 'no_nat': False, 'target_port': '', 'description': 'T',
         'ip_protocol': 'inet', 'source_invert': False, 'source_net': 'any', 'source_port': '',
         'destination_invert': False, 'destination_net': '192.168.0.1', 'destination_port': '',
@@ -195,19 +195,15 @@ def _build_snat(mocker, exists: bool, **params) -> SNat:
     })
     snat = SNat(module=module, result={'changed': False, 'diff': {'before': {}, 'after': {}}})
     mocker.patch.object(snat, '_check_mode')
-    mocker.patch.object(snat, 'find', side_effect=lambda **kw: setattr(snat, 'exists', exists))
+    mocker.patch.object(snat, 'find')
     mocker.patch.object(snat, '_base_check')
     return snat
 
 
-def test_check_requires_interface_when_creating(mocker):
+def test_check_allows_empty_target(mocker):
+    _build_snat(mocker).check()
+
+
+def test_check_requires_interface(mocker):
     with pytest.raises(AnsibleError):
-        _build_snat(mocker, exists=False).check()
-
-
-def test_check_allows_empty_target_when_creating(mocker):
-    _build_snat(mocker, exists=False, interface='lan').check()
-
-
-def test_check_allows_empty_interface_on_existing_rule(mocker):
-    _build_snat(mocker, exists=True).check()
+        _build_snat(mocker, interface='').check()
